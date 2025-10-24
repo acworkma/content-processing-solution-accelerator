@@ -37,11 +37,16 @@ jq -c '.[]' "$SCHEMA_INFO_JSON" | while read -r schema_entry; do
     DATA_JSON=$(jq -n --arg ClassName "$CLASS_NAME" --arg Description "$DESCRIPTION" \
         '{ClassName: $ClassName, Description: $Description}')
 
+    # Ensure endpoint has trailing slash to match FastAPI route definitions like "/schemavault/"
+    if [[ "$API_ENDPOINT_URL" != */ ]]; then
+        API_ENDPOINT_URL="${API_ENDPOINT_URL}/"
+    fi
+
     # Invoke the API with multipart/form-data
+    # Note: Do NOT set a manual Content-Type header for multipart; curl will add the proper boundary.
     RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$API_ENDPOINT_URL" \
-        -H "Content-Type: multipart/form-data" \
         -F "file=@$SCHEMA_FILE;filename=$FILENAME;type=text/x-python" \
-        -F "data=$DATA_JSON")
+        -F "data=$DATA_JSON;type=application/json")
 
     # Extract HTTP status code
     HTTP_STATUS=$(echo "$RESPONSE" | sed -n 's/.*HTTP_STATUS://p')
