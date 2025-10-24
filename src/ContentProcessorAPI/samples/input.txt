@@ -1,0 +1,1 @@
+./upload_files.sh https://ca-cpsappoq4zu-api.thankfulcliff-abb08096.eastus2.azurecontainerapps.io/contentprocessor/submit ./invoices 3ed6060d-4e33-4e6a-b006-4a3dc088b919
