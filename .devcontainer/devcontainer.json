@@ -11,7 +11,7 @@
             "shellautocompletion": true,
             "version": "latest"
         },
-        "azure-cli": "latest"
+        "ghcr.io/devcontainers/features/azure-cli:1": {}
     },
     "customizations": {
         "vscode": {
