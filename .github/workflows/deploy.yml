@@ -4,13 +4,24 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'infra/**'
+      - 'src/**'
+      - 'tests/e2e-test/**'
+      - 'azure.yaml'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/test-automation.yml'
   schedule:
     - cron: "0 9,21 * * *" # Runs at 9:00 AM and 9:00 PM GMT
   workflow_dispatch:
-
+permissions:
+  contents: read
+  actions: read
+  id-token: write
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     outputs:
       invoice_schema_id: ${{ steps.register.outputs.invoice_schema_id }}
       propertydamageclaimform_schema_id: ${{ steps.register.outputs.propertylossdamageclaimform_schema_id }}
@@ -24,28 +35,23 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Setup Azure CLI
-        run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-          az --version  # Verify installation
 
       - name: Login to Azure
-        run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Run Quota Check
         id: quota-check
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          GPT_MIN_CAPACITY: "100"
+          AZURE_REGIONS: ${{ vars.AZURE_REGIONS }}
         run: |
-          export AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
-          export AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}
-          export AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}
-          export AZURE_SUBSCRIPTION_ID="${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-          export GPT_MIN_CAPACITY="100"
-          export AZURE_REGIONS="${{ vars.AZURE_REGIONS }}"
-
           chmod +x infra/scripts/checkquota.sh
           if ! infra/scripts/checkquota.sh; then
             # If quota check fails due to insufficient quota, set the flag
@@ -132,10 +138,7 @@ jobs:
         run: |
           set -e
           echo "Fetching deployment output..."
-
-          # Install azd (Azure Developer CLI)
-          curl -fsSL https://aka.ms/install-azd.sh | bash
-
+          
           # Generate current timestamp in desired format: YYYY-MM-DDTHH:MM:SS.SSSSSSSZ
             current_date=$(date -u +"%Y-%m-%dT%H:%M:%S.%7NZ")
 
@@ -146,14 +149,14 @@ jobs:
             --parameters \
               solutionName="${{ env.ENVIRONMENT_NAME }}" \
               enablePrivateNetworking="false" \
-              secondaryLocation="eastus2" \
               contentUnderstandingLocation="WestUS" \
               deploymentType="GlobalStandard" \
               gptModelName="gpt-4o" \
               gptModelVersion="2024-08-06" \
               gptDeploymentCapacity="30" \
               aiServiceLocation="${{ env.AZURE_LOCATION }}" \
-              tags="{'CreatedBy':'Pipeline', 'SecurityControl':'Ignore','Purpose':'Deploying and Cleaning Up Resources for Validation','CreatedDate':'$current_date'}" \
+              imageTag="latest" \
+              tags="{'CreatedBy':'Pipeline', 'Purpose':'Deploying and Cleaning Up Resources for Validation','CreatedDate':'$current_date'}" \
             --query "properties.outputs" -o json); then
               echo "❌ Deployment failed. See logs above."
               exit 1
@@ -162,18 +165,17 @@ jobs:
           echo "✅ Deployment succeeded."
           echo "$DEPLOY_OUTPUT"
 
-          # Export variables only after successful deploy
-          export CONTAINER_API_APPURL=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_API_APP_FQDN.value')
+          CONTAINER_API_APPURL=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_API_APP_FQDN.value')
           echo "CONTAINER_API_APPURL=$CONTAINER_API_APPURL" >> $GITHUB_ENV
 
-          export CONTAINER_API_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_API_APP_NAME.value')
+          CONTAINER_API_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_API_APP_NAME.value')
           echo "CONTAINER_API_APPNAME=$CONTAINER_API_APPNAME" >> $GITHUB_ENV
 
-          export CONTAINER_WEB_APPURL="https://$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_FQDN.value')"
+          CONTAINER_WEB_APPURL="https://$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_FQDN.value')"
           echo "CONTAINER_WEB_APPURL=$CONTAINER_WEB_APPURL" >> $GITHUB_ENV
           echo "CONTAINER_WEB_APPURL=$CONTAINER_WEB_APPURL" >> $GITHUB_OUTPUT
 
-          export CONTAINER_WEB_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_NAME.value')
+          CONTAINER_WEB_APPNAME=$(echo "$DEPLOY_OUTPUT" | jq -r '.containeR_WEB_APP_NAME.value')
           echo "CONTAINER_WEB_APPNAME=$CONTAINER_WEB_APPNAME" >> $GITHUB_ENV
 
       - name: Register schemas
@@ -289,6 +291,7 @@ jobs:
     if: always() 
     needs: [deploy, e2e-test]
     runs-on: ubuntu-latest
+    environment: production
     env:
       RESOURCE_GROUP_NAME: ${{ needs.deploy.outputs.RESOURCE_GROUP_NAME }}
       AI_SERVICES_NAME: ${{ needs.deploy.outputs.AI_SERVICES_NAME }}
@@ -296,13 +299,12 @@ jobs:
       AZURE_LOCATION: ${{ needs.deploy.outputs.AZURE_LOCATION }}
       ENVIRONMENT_NAME: ${{ needs.deploy.outputs.ENVIRONMENT_NAME }}
     steps:
-      - name: Setup Azure CLI
-        run: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
       - name: Login to Azure
-        run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Delete Bicep Deployment
         if: always()

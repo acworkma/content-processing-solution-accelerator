@@ -12,6 +12,9 @@ These capabilities can be applied to numerous use cases including: contract proc
 </div>
 <br/>
 
+ **Note:** With any AI solutions you create using these templates, you are responsible for assessing all associated risks and for complying with all applicable laws and safety standards. Learn more in the transparency documents for [Agent Service](https://learn.microsoft.com/en-us/azure/ai-foundry/responsible-ai/agents/transparency-note) and [Agent Framework](https://github.com/microsoft/agent-framework/blob/main/TRANSPARENCY_FAQ.md).
+<br/>
+
 <h2><img src="./docs/images/readme/solution-overview.png" width="48" />
 Solution overview
 </h2>
@@ -58,7 +61,7 @@ If you'd like to customize the solution accelerator, here are some common areas 
   - **Review, validate, update** <br/>
   Transparency in reviewing processing steps and final output - allowing for review, comparison to source asset, ability to modify output results, and annotation for historical reference
 
-  - **API driven processing pipelinese** <br/>
+  - **API driven processing pipelines** <br/>
   API end-points are available for external source systems to integrate event-driven processing workflows
          
 </details>
@@ -76,13 +79,15 @@ Follow the quick deploy steps on the deployment guide to deploy this solution 
 [Click here to launch the deployment guide](./docs/DeploymentGuide.md)
 <br/><br/>
 
-| [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/microsoft/content-processing-solution-accelerator) | [![Open in Dev Containers](https://img.shields.io/static/v1?style=for-the-badge&label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/microsoft/content-processing-solution-accelerator) | 
-|---|---|
+| [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/microsoft/content-processing-solution-accelerator) | [![Open in Dev Containers](https://img.shields.io/static/v1?style=for-the-badge&label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/microsoft/content-processing-solution-accelerator) | [![Open in Visual Studio Code Web](https://img.shields.io/static/v1?style=for-the-badge&label=Visual%20Studio%20Code%20(Web)&message=Open&color=blue&logo=visualstudiocode&logoColor=white)](https://vscode.dev/azure/?vscode-azure-exp=foundry&agentPayload=eyJiYXNlVXJsIjogImh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9taWNyb3NvZnQvY29udGVudC1wcm9jZXNzaW5nLXNvbHV0aW9uLWFjY2VsZXJhdG9yL3JlZnMvaGVhZHMvbWFpbi9pbmZyYS92c2NvZGVfd2ViIiwgImluZGV4VXJsIjogIi9pbmRleC5qc29uIiwgInZhcmlhYmxlcyI6IHsiYWdlbnRJZCI6ICIiLCAiY29ubmVjdGlvblN0cmluZyI6ICIiLCAidGhyZWFkSWQiOiAiIiwgInVzZXJNZXNzYWdlIjogIiIsICJwbGF5Z3JvdW5kTmFtZSI6ICIiLCAibG9jYXRpb24iOiAiIiwgInN1YnNjcmlwdGlvbklkIjogIiIsICJyZXNvdXJjZUlkIjogIiIsICJwcm9qZWN0UmVzb3VyY2VJZCI6ICIiLCAiZW5kcG9pbnQiOiAiIn0sICJjb2RlUm91dGUiOiBbImFpLXByb2plY3RzLXNkayIsICJweXRob24iLCAiZGVmYXVsdC1henVyZS1hdXRoIiwgImVuZHBvaW50Il19) |
+|---|---|---|
 
 <br/>
 
 > ⚠️ **Important: Check Azure OpenAI Quota Availability**
  <br/>To ensure sufficient quota is available in your subscription, please follow [quota check instructions guide](./docs/quota_check.md) before you deploy the solution.
+
+> 🛠️ **Need Help?** Check our [Troubleshooting Guide](./docs/TroubleShootingSteps.md) for solutions to common deployment issues.
 
 <br/>
 
@@ -95,7 +100,7 @@ Check the [Azure Products by Region](https://azure.microsoft.com/en-us/explore/g
 
 Pricing varies per region and usage, so it isn't possible to predict exact costs for your usage. The majority of the Azure resources used in this infrastructure are on usage-based pricing tiers. However, Azure Container Registry has a fixed cost per registry per day.
 
-Use the [Azure pricing calculator](https://azure.microsoft.com/en-us/pricing/calculator) to calculate the cost of this solution in your subscription. [Review a sample pricing sheet for the achitecture](https://azure.com/e/0a9a1459d1a2440ca3fd274ed5b53397).
+Use the [Azure pricing calculator](https://azure.microsoft.com/en-us/pricing/calculator) to calculate the cost of this solution in your subscription. [Review a sample pricing sheet for the architecture](https://azure.com/e/0a9a1459d1a2440ca3fd274ed5b53397).
 
 
 <br/>
@@ -117,6 +122,8 @@ Use the [Azure pricing calculator](https://azure.microsoft.com/en-us/pricing/cal
 
 >⚠️ **Important:** To avoid unnecessary costs, remember to take down your app if it's no longer in use,
 either by deleting the resource group in the Portal or running `azd down`.
+
+For detailed cost estimation and pricing information, see the [Deployment Guide](./docs/DeploymentGuide.md).
 
 <br /><br />
 <h2><img src="./docs/images/readme/business-scenario.png" width="48" />
@@ -183,18 +190,26 @@ You may want to consider additional security measures, such as:
 
 
 ### Cross references
-Check out similar solution accelerators
+🧑‍💻 Check out similar solution accelerators
  
 
 | Solution Accelerator | Description |
-|---|---|
+|:---|:---|
 | [Document&nbsp;knowledge&nbsp;mining](https://github.com/microsoft/Document-Knowledge-Mining-Solution-Accelerator) | Process and extract summaries, entities, and metadata from unstructured, multi-modal documents and enable searching and chatting over this data. |
 | [Conversation&nbsp;knowledge&nbsp;mining](https://github.com/microsoft/Conversation-Knowledge-Mining-Solution-Accelerator) | Derive insights from volumes of conversational data using generative AI. It offers key phrase extraction, topic modeling, and interactive chat experiences through an intuitive web interface. |
 | [Document&nbsp;generation](https://github.com/microsoft/document-generation-solution-accelerator) | Identify relevant documents, summarize unstructured information, and generate document templates. |
-
+|[Document&nbsp;Processing&nbsp;Accelerator](https://github.com/Azure/doc-proc-solution-accelerator/) | Modular document AI pipeline that automatically extracts, analyzes, and indexes information from unstructured documents (PDFs, images, etc.) at scale. It offers plug-and-play components for OCR, classification, summarization, and integration to search or chatbots – speeding up data ingestion with enterprise security.|
 
 <br/>   
 
+💡 Want to get familiar with Microsoft's AI and Data Engineering best practices? Check out our playbooks to learn more
+
+| Playbook | Description |
+|:---|:---|
+| [AI&nbsp;playbook](https://learn.microsoft.com/en-us/ai/playbook/) | The Artificial Intelligence (AI) Playbook provides enterprise software engineers with solutions, capabilities, and code developed to solve real-world AI problems. |
+| [Data&nbsp;playbook](https://learn.microsoft.com/en-us/data-engineering/playbook/understanding-data-playbook) | The data playbook provides enterprise software engineers with solutions which contain code developed to solve real-world problems. Everything in the playbook is developed with, and validated by, some of Microsoft's largest and most influential customers and partners. |
+
+<br/> 
 
 ## Provide feedback
 Have questions, find a bug, or want to request a feature? [Submit a new issue](https://github.com/microsoft/content-processing-solution-accelerator/issues) on this repo and we'll connect.
